@@ -1,11 +1,11 @@
 var app = angular.module('MonApp', ['ui.select2', 'LocalStorageModule']);
 
-
 app.config(['localStorageServiceProvider',function(localStorageServiceProvider){
 	localStorageServiceProvider.setPrefix('currency');}])
 
-
 app.controller('DevisesCtrl', ['$scope', '$http', 'localStorageService', function ($scope, $http, localStorageService) {
+
+	
 
 		$scope.erreur = false;
 		$scope.resultat = false;
@@ -17,9 +17,9 @@ app.controller('DevisesCtrl', ['$scope', '$http', 'localStorageService', functio
 			};
 
 			if ($scope.online === true) {
-				$http.jsonp('http://rate-exchange.appspot.com/currency?from='+ $scope.deviseFrom +'&to='+$scope.deviseTo+'&q='+$scope.price+'&callback=JSON_CALLBACK').
+				$http.jsonp('http://rate-exchange.appspot.com/currency?from='+ $scope.deviseFrom +'&to='+$scope.deviseTo+'&q=1&callback=JSON_CALLBACK').
 				  success(function(data, status, headers, config) {
-				  		$scope.result = data.v;
+				  		$scope.result = data.v * $scope.price;
 				  		localStorageService.set($scope.deviseFrom + $scope.deviseTo,data.v);
 				  		$scope.resultat = !$scope.resultat;
 				  }).
@@ -27,8 +27,12 @@ app.controller('DevisesCtrl', ['$scope', '$http', 'localStorageService', functio
 				    
 				  });	
 			} else {
-				console.log("pas connecter");
-				if (true) {};
+				var data = localStorageService.get($scope.deviseFrom + $scope.deviseTo);
+				if (data) {
+					$scope.result = data * $scope.price;
+				} else {
+					$scope.result = "Exchange rate not in Local Bdd";
+				}
 			}
 		}
 		
@@ -37,6 +41,7 @@ app.controller('DevisesCtrl', ['$scope', '$http', 'localStorageService', functio
 			$scope.deviseFrom = $scope.deviseTo;
 			$scope.deviseTo = tmp;
 		}
+
 
 		$scope.devises = [
 			{pays:'United Arab Emirates Dirham', code:'AED'},
